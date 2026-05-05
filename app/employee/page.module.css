@@ -1,0 +1,267 @@
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: 32px;
+  max-width: 1200px;
+  position: relative;
+}
+
+.registrationGrid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .registrationGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .card {
+    padding: 20px;
+  }
+}
+
+.mainContent {
+  flex: 1;
+}
+
+.tabs {
+  display: flex;
+  gap: 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 30px;
+}
+
+.tab {
+  padding: 12px 0;
+  font-weight: 600;
+  color: var(--text-muted);
+  position: relative;
+}
+
+.tabActive {
+  color: var(--primary);
+}
+
+.tabActive::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.fullWidth {
+  grid-column: span 2;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.input {
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #f8fafc;
+}
+
+.input:focus {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.barcodeWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.barcodeIcon {
+  position: absolute;
+  right: 12px;
+  color: var(--text-muted);
+}
+
+.preview {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--primary-light);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.previewImg {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: white;
+}
+
+.previewInfo h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.previewInfo p {
+  font-size: 0.8rem;
+  color: var(--primary-hover);
+  font-weight: 600;
+}
+
+.submitBtn {
+  margin-top: 30px;
+  padding: 14px;
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.submitBtn:hover {
+  background: var(--primary-hover);
+}
+
+.loading {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.importBox {
+  border: 2px dashed var(--border);
+  padding: 60px;
+  text-align: center;
+  border-radius: var(--radius-xl);
+  transition: all 0.2s ease;
+}
+
+.importBox:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.importIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  display: block;
+}
+
+/* Image Selector Panel */
+.imageSelector {
+  width: 320px;
+  border-left: 1px solid var(--border);
+  padding-left: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: slideIn 0.4s ease-out;
+}
+
+.imageSelectorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.imageSelectorHeader h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--secondary);
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.imageItem {
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imageItem:hover {
+  border-color: var(--primary-light);
+  transform: scale(1.02);
+}
+
+.imageItemSelected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.imageItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.noImages {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 1100px) {
+  .card {
+    flex-direction: column;
+  }
+  
+  .imageSelector {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    padding-left: 0;
+    padding-top: 32px;
+  }
+}

@@ -94,9 +94,12 @@
 }
 
 .table td {
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
+}
+
+.table td:not(:first-child), .table th:not(:first-child) {
   white-space: nowrap;
 }
 
@@ -195,7 +198,7 @@
   width: 100%;
   max-width: 500px;
   border-radius: var(--radius-xl);
-  padding: 32px;
+  padding: 24px;
   box-shadow: var(--shadow-lg);
   position: relative;
 }

@@ -1,15 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from '../app/employee/page.module.css';
 import { mockProductsBase } from '@/lib/data';
 import { ProductBase, ProductEnvio } from '@/lib/types';
 import { useAppContext } from '@/lib/AppContext';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 
 export default function ProductForm() {
   const { addOrder } = useAppContext();
   const [supplierName, setSupplierName] = useState('');
   const [draftItems, setDraftItems] = useState<Omit<ProductEnvio, 'id' | 'status' | 'data_envio'>[]>([]);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
   // PERSISTENCE: Load draft from localStorage on mount
   useEffect(() => {
@@ -33,12 +36,49 @@ export default function ProductForm() {
   const [foundProduct, setFoundProduct] = useState<ProductBase | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Scanner logic
+  useEffect(() => {
+    if (isScannerOpen) {
+      const scanner = new Html5QrcodeScanner(
+        "reader",
+        { 
+          fps: 10, 
+          qrbox: { width: 250, height: 150 },
+          aspectRatio: 1.0
+        },
+        /* verbose= */ false
+      );
+
+      scanner.render((decodedText) => {
+        setBarcode(decodedText);
+        setSearchTrigger('barcode');
+        setHasSelectedProduct(false);
+        setIsScannerOpen(false);
+        scanner.clear();
+      }, (error) => {
+        // console.warn(error);
+      });
+
+      scannerRef.current = scanner;
+
+      return () => {
+        if (scannerRef.current) {
+          scannerRef.current.clear().catch(err => console.error("Failed to clear scanner", err));
+        }
+      };
+    }
+  }, [isScannerOpen]);
+
   // Image Selector State
   const [imageResults, setImageResults] = useState<{url: string, name: string; barcode: string}[]>([]);
   const [isSearchingImages, setIsSearchingImages] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [searchTrigger, setSearchTrigger] = useState<'barcode' | 'name' | null>(null);
   const [hasSelectedProduct, setHasSelectedProduct] = useState(false);
+
+  const IconBarcode = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
+  );
 
   useEffect(() => {
     if (barcode.length >= 3 && searchTrigger === 'barcode' && !hasSelectedProduct) {
@@ -145,12 +185,30 @@ export default function ProductForm() {
       setIsSubmitting(false);
       setDraftItems([]);
       setSupplierName('');
+      localStorage.removeItem('precifica_draft_items');
+      localStorage.removeItem('precifica_draft_supplier');
     }, 1000);
   };
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
+      {/* Modal do Scanner */}
+      {isScannerOpen && (
+        <div className={styles.scannerOverlay}>
+          <div className={styles.scannerContent}>
+            <div className={styles.scannerHeader}>
+              <h3>Escanear Código</h3>
+              <button className={styles.scannerClose} onClick={() => setIsScannerOpen(false)}>✕</button>
+            </div>
+            <div id="reader" className={styles.readerContainer}></div>
+            <div className={styles.scannerInstructions}>
+              Posicione o código de barras no centro do quadrado.
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 1. SEÇÃO DE ENTRADA */}
       <div className={styles.registrationGrid}>
         
@@ -163,16 +221,25 @@ export default function ProductForm() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             <div className={styles.field}>
               <label className={styles.label}>Código de Barras</label>
-              <div style={{ position: 'relative' }}>
-                <input 
-                  type="text" 
-                  className={styles.input} 
-                  value={barcode}
-                  onChange={(e) => { setBarcode(e.target.value); if(!searchTrigger) setSearchTrigger('barcode'); }}
-                  placeholder="Escaneie ou digite"
-                  style={{ width: '100%' }}
-                />
-                {loading && <div className={styles.loading} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', borderTopColor: 'var(--primary)', width: '16px', height: '16px' }}></div>}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <input 
+                    type="text" 
+                    className={styles.input} 
+                    value={barcode}
+                    onChange={(e) => { setBarcode(e.target.value); if(!searchTrigger) setSearchTrigger('barcode'); }}
+                    placeholder="Escaneie ou digite"
+                    style={{ width: '100%' }}
+                  />
+                  {loading && <div className={styles.loading} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', borderTopColor: 'var(--primary)', width: '16px', height: '16px' }}></div>}
+                </div>
+                <button 
+                  className={styles.scannerButton}
+                  onClick={() => setIsScannerOpen(true)}
+                  title="Abrir Câmera"
+                >
+                  <IconBarcode /> Escanear
+                </button>
               </div>
             </div>
             

@@ -296,3 +296,86 @@
   vertical-align: middle;
   white-space: nowrap;
 }
+
+/* Scanner Styles */
+.scannerButton {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  height: 48px;
+}
+
+.scannerButton:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.scannerOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.scannerContent {
+  width: 100%;
+  max-width: 500px;
+  background: white;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  position: relative;
+}
+
+.scannerHeader {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.scannerHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.scannerClose {
+  background: #f1f5f9;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.readerContainer {
+  width: 100%;
+  min-height: 300px;
+  background: #000;
+}
+
+.scannerInstructions {
+  padding: 20px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #64748b;
+}

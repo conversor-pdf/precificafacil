@@ -171,6 +171,7 @@ export default function AdminDashboard() {
                             <th>Produto</th>
                             <th style={{ textAlign: 'center' }}>Custo</th>
                             <th style={{ textAlign: 'center' }}>Sugerido</th>
+                            <th style={{ textAlign: 'center' }}>Margem</th>
                             <th style={{ textAlign: 'center' }}>Ajuste</th>
                             <th style={{ textAlign: 'center' }}>Status</th>
                             <th style={{ textAlign: 'center' }}>Ações</th>
@@ -190,6 +191,14 @@ export default function AdminDashboard() {
                               </td>
                               <td style={{ textAlign: 'center' }}>R$ {product.custo.toFixed(2)}</td>
                               <td style={{ textAlign: 'center' }}>R$ {product.preco_sugerido.toFixed(2)}</td>
+                              <td style={{ textAlign: 'center' }}>
+                                <span style={{ 
+                                  background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px', 
+                                  fontSize: '0.75rem', fontWeight: 600, color: 'var(--secondary)' 
+                                }}>
+                                  {product.margem.toFixed(1)}%
+                                </span>
+                              </td>
                               <td style={{ textAlign: 'center', fontWeight: 800, color: product.status === 'alterado' ? '#ea580c' : '#16a34a' }}>
                                 {product.status === 'pendente' ? '-' : `R$ ${product.preco_final?.toFixed(2)}`}
                               </td>

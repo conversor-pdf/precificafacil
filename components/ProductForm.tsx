@@ -271,6 +271,7 @@ export default function ProductForm() {
                   <th>Produto</th>
                   <th style={{ textAlign: 'center' }}>Custo</th>
                   <th style={{ textAlign: 'center' }}>Venda</th>
+                  <th style={{ textAlign: 'center' }}>Margem</th>
                   <th style={{ textAlign: 'center' }}>Ação</th>
                 </tr>
               </thead>
@@ -286,6 +287,14 @@ export default function ProductForm() {
                     </td>
                     <td style={{ textAlign: 'center', fontSize: '0.9rem' }}>R$ {item.custo.toFixed(2)}</td>
                     <td style={{ textAlign: 'center', fontWeight: 800, color: 'var(--primary)', fontSize: '0.9rem' }}>R$ {item.preco_sugerido.toFixed(2)}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span style={{ 
+                        background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px', 
+                        fontSize: '0.8rem', fontWeight: 600, color: 'var(--secondary)' 
+                      }}>
+                        {item.margem.toFixed(1)}%
+                      </span>
+                    </td>
                     <td style={{ textAlign: 'center' }}>
                       <button 
                         onClick={() => setDraftItems(draftItems.filter((_, i) => i !== idx))}

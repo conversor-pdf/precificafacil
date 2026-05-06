@@ -16,6 +16,7 @@ interface AppContextType {
   startProcessingOrder: (orderId: string) => void;
   confirmOrderResponse: (orderId: string) => void;
   logout: () => void;
+  fetchOrders: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -38,13 +39,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('precifica_user', JSON.stringify(user));
       fetchOrders();
       
-      // Real-time subscription
+      // Real-time subscription mais robusta
       const channel = supabase
-        .channel('schema-db-changes')
-        .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+        .channel('db-sync')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+          console.log('Ordem alterada:', payload);
           fetchOrders();
         })
-        .subscribe();
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
+          console.log('Produto alterado:', payload);
+          fetchOrders();
+        })
+        .subscribe((status) => {
+          console.log('Status da inscrição real-time:', status);
+        });
 
       return () => {
         supabase.removeChannel(channel);
@@ -178,7 +186,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ user, setUser, orders, addOrder, updateOrderProduct, keepProductInOrder, concludeOrder, startProcessingOrder, confirmOrderResponse, logout }}>
+    <AppContext.Provider value={{ user, setUser, orders, addOrder, updateOrderProduct, keepProductInOrder, concludeOrder, startProcessingOrder, confirmOrderResponse, logout, fetchOrders }}>
       {children}
     </AppContext.Provider>
   );

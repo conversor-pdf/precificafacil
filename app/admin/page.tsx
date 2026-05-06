@@ -10,15 +10,22 @@ const IconPlay = () => (
 );
 
 export default function AdminDashboard() {
-  const { orders, updateOrderProduct, keepProductInOrder, concludeOrder, startProcessingOrder } = useAppContext();
+  const { orders, updateOrderProduct, keepProductInOrder, concludeOrder, startProcessingOrder, fetchOrders } = useAppContext();
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<{orderId: string, product: ProductEnvio} | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   
   // Tabs state per order
   const [orderTabs, setOrderTabs] = useState<Record<string, 'pendente' | 'verificado'>>({});
 
   const [marginInput, setMarginInput] = useState<string>('30');
   const [priceInput, setPriceInput] = useState<string>('');
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    await fetchOrders();
+    setTimeout(() => setIsSyncing(false), 1000);
+  };
 
   // Show both 'pendente' and 'processando' orders in the main dashboard
   const activeOrders = orders.filter(o => o.status === 'pendente' || o.status === 'processando');
@@ -68,8 +75,21 @@ export default function AdminDashboard() {
   return (
     <div className="animate-fade-in">
       <div className={styles.sectionHeader}>
-        <h2>📦 Pedidos de Ajuste de Preço ({activeOrders.length})</h2>
-        <p>Inicie o processamento para revisar os itens de cada distribuidora.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>📦 Pedidos de Ajuste de Preço ({activeOrders.length})</h2>
+          <button 
+            onClick={handleManualSync}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '6px', 
+              fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)',
+              background: 'var(--primary-light)', padding: '6px 12px', borderRadius: '20px',
+              opacity: isSyncing ? 0.7 : 1, transition: 'all 0.2s'
+            }}
+          >
+            {isSyncing ? <div className="animate-spin">🔄</div> : '🔄'} {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
+          </button>
+        </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Inicie o processamento para revisar os itens de cada distribuidora.</p>
       </div>
 
       <div style={{ display: 'grid', gap: '15px' }}>

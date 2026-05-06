@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "218161758811",
+    "project_id": "precifica-facil-da5b6",
+    "storage_bucket": "precifica-facil-da5b6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:218161758811:android:5d81d64d2f17e1dde3b57e",
+        "android_client_info": {
+          "package_name": "com.precificafacil.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8SuAFw9VDGDtPjRYlrnxtcOSbpqXPjDk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ProductEnvio, Order, UserProfile } from './types';
 import { supabase } from './supabase';
 import { useRouter } from 'next/navigation';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 interface AppContextType {
   user: UserProfile | null;
@@ -39,6 +41,50 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('precifica_user', JSON.stringify(user));
       fetchOrders();
       
+      // Push Notifications Setup (Native Only)
+      if (Capacitor.isNativePlatform()) {
+        const registerPush = async () => {
+          let permStatus = await PushNotifications.checkPermissions();
+          if (permStatus.receive === 'prompt') {
+            permStatus = await PushNotifications.requestPermissions();
+          }
+          if (permStatus.receive !== 'granted') {
+            console.warn('Permissão de Push negada.');
+            return;
+          }
+          await PushNotifications.register();
+        };
+
+        registerPush();
+
+        // Listeners for push notifications
+        PushNotifications.addListener('registration', async (token) => {
+          console.log('Push registration success, token: ' + token.value);
+          // Save token to Supabase profiles table
+          try {
+            await supabase.from('profiles').update({ fcm_token: token.value }).eq('id', user.id);
+          } catch (e) {
+            console.error('Failed to save FCM token', e);
+          }
+        });
+
+        PushNotifications.addListener('registrationError', (error: any) => {
+          console.error('Error on registration: ' + JSON.stringify(error));
+        });
+
+        PushNotifications.addListener('pushNotificationReceived', (notification) => {
+          console.log('Push received: ', notification);
+          // Optional: Show in-app alert or trigger refresh
+          fetchOrders();
+        });
+
+        PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+          console.log('Push action performed: ', notification);
+          // Handle clicking on notification (e.g., navigate to specific order)
+          fetchOrders();
+        });
+      }
+
       // Real-time subscription com BROADCAST (mais rápido e ignora travas do banco)
       const channel = supabase
         .channel('sync-channel', {

@@ -31,9 +31,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { orders } = useAppContext();
+  const { orders, user, logout } = useAppContext();
 
-  // Admin notifications: new orders that are 'pendente' (waiting to be processed)
   const notificationCount = orders.filter(o => o.status === 'pendente').length;
 
   return (
@@ -58,30 +57,26 @@ export default function AdminLayout({
           <Link href="/admin/historico" className={`${styles.navItem} ${pathname === '/admin/historico' ? styles.navItemActive : ''}`}>
             <IconHistory /> Histórico
           </Link>
-          <Link href="/admin/mercados" className={`${styles.navItem} ${pathname === '/admin/mercados' ? styles.navItemActive : ''}`}>
-            <IconMarkets /> Mercados
-          </Link>
           <Link href="/admin/usuarios" className={`${styles.navItem} ${pathname === '/admin/usuarios' ? styles.navItemActive : ''}`}>
-            <IconUsers /> Usuários
+            <IconUsers /> Colaboradores
           </Link>
         </nav>
 
         <div style={{ marginTop: 'auto' }}>
-          <Link href="/login" className={styles.navItem}>
+          <button onClick={logout} className={styles.navItem} style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer' }}>
             <IconLogout /> Sair
-          </Link>
+          </button>
         </div>
       </aside>
 
       <main className={styles.main}>
         <header className={styles.header}>
           <div className={styles.titleSection}>
-            <h1>Painel de Aprovação</h1>
-            <p>Aprove ou ajuste os preços enviados pelos mercados</p>
+            <h1>Painel do Lojista</h1>
+            <p>Rede: {user?.mercado || 'Supermercado'}</p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
-            {/* Notification Bell */}
             <Link href="/admin" style={{ position: 'relative', color: 'var(--text-muted)', display: 'flex' }}>
               <IconBell />
               {notificationCount > 0 && (
@@ -99,10 +94,10 @@ export default function AdminLayout({
 
             <div className={styles.userProfile} style={{ paddingRight: '10px' }}>
               <div className={styles.userText} style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Ana Oliveira</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Administradora</div>
+                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user?.nome}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Administrador da Rede</div>
               </div>
-              <div className={styles.avatar}>AO</div>
+              <div className={styles.avatar}>{user?.nome.substring(0, 2).toUpperCase()}</div>
             </div>
           </div>
         </header>

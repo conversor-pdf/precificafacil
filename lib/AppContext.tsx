@@ -1,9 +1,13 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ProductEnvio, Order } from './types';
+import { ProductEnvio, Order, UserProfile } from './types';
+import { supabase } from './supabase';
+import { useRouter } from 'next/navigation';
 
 interface AppContextType {
+  user: UserProfile | null;
+  setUser: (user: UserProfile | null) => void;
   orders: Order[];
   addOrder: (nome: string, produtos: Omit<ProductEnvio, 'id' | 'status' | 'data_envio'>[]) => void;
   updateOrderProduct: (orderId: string, productId: string, newPrice: number, newMargin: number, isChange: boolean) => void;
@@ -11,103 +15,138 @@ interface AppContextType {
   concludeOrder: (orderId: string) => void;
   startProcessingOrder: (orderId: string) => void;
   confirmOrderResponse: (orderId: string) => void;
+  logout: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const router = useRouter();
 
+  // Load user session from local storage on mount (simple auth simulation)
   useEffect(() => {
-    const saved = localStorage.getItem('precifica_orders');
-    if (saved) {
-      try {
-        setOrders(JSON.parse(saved));
-      } catch (e) {
-        console.error('Error loading saved orders', e);
-      }
+    const savedUser = localStorage.getItem('precifica_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('precifica_orders', JSON.stringify(orders));
-  }, [orders]);
+    if (user) {
+      localStorage.setItem('precifica_user', JSON.stringify(user));
+      fetchOrders();
+      
+      // Real-time subscription
+      const channel = supabase
+        .channel('schema-db-changes')
+        .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+          fetchOrders();
+        })
+        .subscribe();
 
-  const addOrder = (nome: string, produtos: Omit<ProductEnvio, 'id' | 'status' | 'data_envio'>[]) => {
-    const newOrder: Order = {
-      id: Math.random().toString(36).substr(2, 9),
-      nome,
-      mercado: 'Mercado Central',
-      data_criacao: new Date().toISOString(),
-      status: 'pendente',
-      produtos: produtos.map(p => ({
-        ...p,
-        id: Math.random().toString(36).substr(2, 9),
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      localStorage.removeItem('precifica_user');
+      setOrders([]);
+    }
+  }, [user]);
+
+  const fetchOrders = async () => {
+    if (!user) return;
+
+    let query = supabase.from('orders').select('*, produtos:products(*)');
+
+    // Filter based on role
+    if (user.role === 'admin') {
+      // Lojista sees orders assigned to them
+      query = query.eq('lojista_id', user.id);
+    } else if (user.role === 'employee') {
+      // Employee sees orders from their rede/lojista
+      query = query.eq('lojista_id', user.parent_id);
+    }
+
+    const { data, error } = await query.order('data_criacao', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching orders:', error);
+    } else {
+      setOrders(data || []);
+    }
+  };
+
+  const addOrder = async (nome: string, produtos: Omit<ProductEnvio, 'id' | 'status' | 'data_envio'>[]) => {
+    if (!user) return;
+
+    // Redireciona o lojista_id (se for funcionário, o lojista é o parent_id)
+    const lojistaId = user.role === 'employee' ? user.parent_id : user.id;
+
+    const { data: orderData, error: orderError } = await supabase
+      .from('orders')
+      .insert({
+        nome,
+        mercado: user.mercado || 'Mercado Central',
         status: 'pendente',
-        data_envio: new Date().toISOString(),
-      })),
-    };
-    setOrders(prev => [newOrder, ...prev]);
+        lojista_id: lojistaId
+      })
+      .select()
+      .single();
+
+    if (orderError) return;
+
+    const productsToInsert = produtos.map(p => ({
+      order_id: orderData.id,
+      nome: p.nome,
+      codigo_barras: p.codigo_barras,
+      imagem: p.imagem,
+      custo: p.custo,
+      preco_sugerido: p.preco_sugerido,
+      margem: p.margem,
+      status: 'pendente'
+    }));
+
+    await supabase.from('products').insert(productsToInsert);
   };
 
-  const updateOrderProduct = (orderId: string, productId: string, newPrice: number, newMargin: number, isChange: boolean) => {
-    setOrders(prev => prev.map(order => {
-      if (order.id !== orderId) return order;
-      return {
-        ...order,
-        produtos: order.produtos.map(p => {
-          if (p.id !== productId) return p;
-          return {
-            ...p,
-            preco_final: newPrice,
-            margem: newMargin,
-            status: isChange ? 'alterado' : 'aprovado'
-          };
-        })
-      };
-    }));
+  const updateOrderProduct = async (orderId: string, productId: string, newPrice: number, newMargin: number, isChange: boolean) => {
+    await supabase.from('products').update({
+      preco_final: newPrice,
+      margem: newMargin,
+      status: isChange ? 'alterado' : 'aprovado'
+    }).eq('id', productId);
   };
 
-  const keepProductInOrder = (orderId: string, productId: string) => {
-    setOrders(prev => prev.map(order => {
-      if (order.id !== orderId) return order;
-      return {
-        ...order,
-        produtos: order.produtos.map(p => {
-          if (p.id !== productId) return p;
-          return {
-            ...p,
-            preco_final: p.preco_sugerido,
-            status: 'verificado'
-          };
-        })
-      };
-    }));
+  const keepProductInOrder = async (orderId: string, productId: string) => {
+    const product = orders.find(o => o.id === orderId)?.produtos.find(p => p.id === productId);
+    if (!product) return;
+    await supabase.from('products').update({
+      preco_final: product.preco_sugerido,
+      status: 'verificado'
+    }).eq('id', productId);
   };
 
-  const concludeOrder = (orderId: string) => {
-    setOrders(prev => prev.map(order => {
-      if (order.id !== orderId) return order;
-      return { ...order, status: 'concluido' };
-    }));
+  const concludeOrder = async (orderId: string) => {
+    await supabase.from('orders').update({ status: 'concluido' }).eq('id', orderId);
   };
 
-  const startProcessingOrder = (orderId: string) => {
-    setOrders(prev => prev.map(order => {
-      if (order.id !== orderId) return order;
-      return { ...order, status: 'processando' };
-    }));
+  const startProcessingOrder = async (orderId: string) => {
+    await supabase.from('orders').update({ status: 'processando' }).eq('id', orderId);
   };
 
-  const confirmOrderResponse = (orderId: string) => {
-    setOrders(prev => prev.map(order => {
-      if (order.id !== orderId) return order;
-      return { ...order, status: 'confirmado' };
-    }));
+  const confirmOrderResponse = async (orderId: string) => {
+    await supabase.from('orders').update({ status: 'confirmado' }).eq('id', orderId);
+  };
+
+  const logout = () => {
+    setUser(null);
+    router.push('/login');
   };
 
   return (
-    <AppContext.Provider value={{ orders, addOrder, updateOrderProduct, keepProductInOrder, concludeOrder, startProcessingOrder, confirmOrderResponse }}>
+    <AppContext.Provider value={{ user, setUser, orders, addOrder, updateOrderProduct, keepProductInOrder, concludeOrder, startProcessingOrder, confirmOrderResponse, logout }}>
       {children}
     </AppContext.Provider>
   );

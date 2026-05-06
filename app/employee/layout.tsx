@@ -34,9 +34,8 @@ export default function EmployeeLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { orders } = useAppContext();
+  const { orders, user, logout } = useAppContext();
 
-  // Employee notifications: orders that are 'concluido' (returned by ADM but not confirmed by employee)
   const notificationCount = orders.filter(o => o.status === 'concluido').length;
 
   return (
@@ -73,9 +72,9 @@ export default function EmployeeLayout({
         </nav>
 
         <div style={{ marginTop: 'auto' }}>
-          <Link href="/login" className={styles.navItem}>
+          <button onClick={logout} className={styles.navItem} style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer' }}>
             <IconLogout /> Sair
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -83,11 +82,10 @@ export default function EmployeeLayout({
         <header className={styles.header}>
           <div className={styles.titleSection}>
             <h1>Área do Colaborador</h1>
-            <p>Mercado Central - Unidade 01</p>
+            <p>{user?.mercado || 'Unidade Local'}</p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
-            {/* Notification Bell */}
             <Link href="/employee/retornos" style={{ position: 'relative', color: 'var(--text-muted)', display: 'flex' }}>
               <IconBell />
               {notificationCount > 0 && (
@@ -105,10 +103,10 @@ export default function EmployeeLayout({
 
             <div className={styles.userProfile} style={{ paddingRight: '10px' }}>
               <div className={styles.userText} style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>João Silva</div>
+                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user?.nome}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Operador de Loja</div>
               </div>
-              <div className={styles.avatar} style={{ background: 'var(--secondary)' }}>JS</div>
+              <div className={styles.avatar} style={{ background: 'var(--secondary)' }}>{user?.nome.substring(0, 2).toUpperCase()}</div>
             </div>
           </div>
         </header>

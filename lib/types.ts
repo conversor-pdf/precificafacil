@@ -1,10 +1,13 @@
-export type UserRole = 'admin' | 'employee';
+export type UserRole = 'super_admin' | 'admin' | 'employee';
 
-export interface User {
+export interface UserProfile {
   id: string;
-  name: string;
+  email: string;
+  nome: string;
   role: UserRole;
-  market?: string;
+  parent_id?: string;
+  mercado?: string;
+  data_criacao: string;
 }
 
 export interface ProductBase {
@@ -22,8 +25,8 @@ export interface ProductEnvio {
   imagem: string;
   mercado: string;
   custo: number;
-  preco_sugerido: number; // The price employee suggested
-  preco_final?: number;   // The price admin approved
+  preco_sugerido: number;
+  preco_final?: number;
   margem: number;
   status: ProductStatus;
   data_envio: string;
@@ -36,6 +39,7 @@ export interface Order {
   data_criacao: string;
   status: 'pendente' | 'processando' | 'concluido' | 'confirmado';
   produtos: ProductEnvio[];
+  lojista_id?: string;
 }
 
 export interface Stats {

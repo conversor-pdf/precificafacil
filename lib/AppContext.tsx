@@ -39,25 +39,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('precifica_user', JSON.stringify(user));
       fetchOrders();
       
-      // Real-time subscription mais robusta
+      // Real-time subscription com BROADCAST (mais rápido e ignora travas do banco)
       const channel = supabase
-        .channel('db-sync')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
-          console.log('Ordem alterada:', payload);
+        .channel('sync-channel', {
+          config: {
+            broadcast: { self: false },
+          },
+        })
+        .on('broadcast', { event: 'refresh' }, () => {
+          console.log('Sinal de refresh recebido via Broadcast!');
           fetchOrders();
         })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
-          console.log('Produto alterado:', payload);
-          fetchOrders();
-        })
-        .subscribe((status) => {
-          console.log('Status da inscrição real-time:', status);
-        });
+        // Mantém também o postgres_changes como backup
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchOrders())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchOrders())
+        .subscribe();
 
-      // Polling de segurança (caso o real-time falhe ou oscile)
+      // Polling de segurança (acelerado para 10 segundos)
       const pollingInterval = setInterval(() => {
         fetchOrders();
-      }, 30000); // 30 segundos
+      }, 10000);
 
       return () => {
         supabase.removeChannel(channel);
@@ -68,6 +69,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setOrders([]);
     }
   }, [user]);
+
+  // Função para avisar outros dispositivos para atualizarem
+  const notifyRefresh = () => {
+    supabase.channel('sync-channel').send({
+      type: 'broadcast',
+      event: 'refresh',
+      payload: { timestamp: new Date().toISOString() },
+    });
+  };
 
   const fetchOrders = async () => {
     if (!user) return;
@@ -123,6 +133,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }));
 
     await supabase.from('products').insert(productsToInsert);
+    notifyRefresh();
   };
 
   const updateOrderProduct = async (orderId: string, productId: string, newPrice: number, newMargin: number, isChange: boolean) => {
@@ -143,6 +154,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       margem: newMargin,
       status: isChange ? 'alterado' : 'aprovado'
     }).eq('id', productId);
+    notifyRefresh();
   };
 
   const keepProductInOrder = async (orderId: string, productId: string) => {
@@ -167,6 +179,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       preco_final: product.preco_sugerido,
       status: 'verificado'
     }).eq('id', productId);
+    notifyRefresh();
   };
 
   const concludeOrder = async (orderId: string) => {
@@ -181,11 +194,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // Fallback: tenta atualizar apenas o status
       await supabase.from('orders').update({ status: 'concluido' }).eq('id', orderId);
     }
+    notifyRefresh();
   };
 
   const startProcessingOrder = async (orderId: string) => {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'processando' } : o));
     await supabase.from('orders').update({ status: 'processando' }).eq('id', orderId);
+    notifyRefresh();
   };
 
   const confirmOrderResponse = async (orderId: string) => {
@@ -199,6 +214,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // Fallback: tenta atualizar apenas o status
       await supabase.from('orders').update({ status: 'confirmado' }).eq('id', orderId);
     }
+    notifyRefresh();
   };
 
   const logout = () => {

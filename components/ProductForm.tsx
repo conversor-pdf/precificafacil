@@ -10,6 +10,20 @@ export default function ProductForm() {
   const { addOrder } = useAppContext();
   const [supplierName, setSupplierName] = useState('');
   const [draftItems, setDraftItems] = useState<Omit<ProductEnvio, 'id' | 'status' | 'data_envio'>[]>([]);
+
+  // PERSISTENCE: Load draft from localStorage on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('precifica_draft_items');
+    const savedSupplier = localStorage.getItem('precifica_draft_supplier');
+    if (savedDraft) setDraftItems(JSON.parse(savedDraft));
+    if (savedSupplier) setSupplierName(savedSupplier);
+  }, []);
+
+  // PERSISTENCE: Save draft to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('precifica_draft_items', JSON.stringify(draftItems));
+    localStorage.setItem('precifica_draft_supplier', supplierName);
+  }, [draftItems, supplierName]);
   
   const [barcode, setBarcode] = useState('');
   const [productName, setProductName] = useState('');

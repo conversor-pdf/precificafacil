@@ -84,7 +84,7 @@
 
 .table th {
   background: #f8fafc;
-  padding: 18px 32px;
+  padding: 14px 16px;
   font-size: 0.75rem;
   font-weight: 800;
   color: var(--text-muted);
@@ -94,7 +94,7 @@
 }
 
 .table td {
-  padding: 18px 32px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
   white-space: nowrap;
@@ -103,7 +103,7 @@
 .productCell {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .productImg {
@@ -149,7 +149,7 @@
 }
 
 .btnMaintain {
-  padding: 8px 16px;
+  padding: 6px 12px;
   background: var(--primary);
   color: white;
   border-radius: var(--radius-md);
@@ -162,7 +162,7 @@
 }
 
 .btnChange {
-  padding: 8px 16px;
+  padding: 6px 12px;
   background: #6366f1;
   color: white;
   border-radius: var(--radius-md);

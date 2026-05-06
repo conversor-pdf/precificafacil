@@ -90,7 +90,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         nome,
         mercado: user.mercado || 'Mercado Central',
         status: 'pendente',
-        lojista_id: lojistaId
+        lojista_id: lojistaId,
+        solicitante: user.nome
       })
       .select()
       .single();

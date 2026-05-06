@@ -5,14 +5,14 @@ import styles from '../app/employee/page.module.css';
 import { mockProductsBase } from '@/lib/data';
 import { ProductBase, ProductEnvio } from '@/lib/types';
 import { useAppContext } from '@/lib/AppContext';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 
 export default function ProductForm() {
   const { addOrder } = useAppContext();
   const [supplierName, setSupplierName] = useState('');
   const [draftItems, setDraftItems] = useState<Omit<ProductEnvio, 'id' | 'status' | 'data_envio'>[]>([]);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const html5QrCode = useRef<Html5Qrcode | null>(null);
 
   // PERSISTENCE: Load draft from localStorage on mount
   useEffect(() => {
@@ -39,35 +39,59 @@ export default function ProductForm() {
   // Scanner logic
   useEffect(() => {
     if (isScannerOpen) {
-      const scanner = new Html5QrcodeScanner(
-        "reader",
-        { 
-          fps: 10, 
-          qrbox: { width: 250, height: 150 },
-          aspectRatio: 1.0
-        },
-        /* verbose= */ false
-      );
+      const startScanner = async () => {
+        try {
+          const scanner = new Html5Qrcode("reader");
+          html5QrCode.current = scanner;
+          
+          const config = { 
+            fps: 10, 
+            qrbox: { width: 250, height: 150 },
+            aspectRatio: 1.0
+          };
 
-      scanner.render((decodedText) => {
-        setBarcode(decodedText);
-        setSearchTrigger('barcode');
-        setHasSelectedProduct(false);
-        setIsScannerOpen(false);
-        scanner.clear();
-      }, (error) => {
-        // console.warn(error);
-      });
+          await scanner.start(
+            { facingMode: "environment" }, 
+            config,
+            (decodedText) => {
+              setBarcode(decodedText);
+              setSearchTrigger('barcode');
+              setHasSelectedProduct(false);
+              stopScanner();
+            },
+            (errorMessage) => {
+              // silence errors during scan
+            }
+          );
+        } catch (err) {
+          console.error("Erro ao iniciar scanner:", err);
+          alert("Não foi possível acessar a câmera. Verifique as permissões do seu navegador.");
+          setIsScannerOpen(false);
+        }
+      };
 
-      scannerRef.current = scanner;
+      startScanner();
 
       return () => {
-        if (scannerRef.current) {
-          scannerRef.current.clear().catch(err => console.error("Failed to clear scanner", err));
-        }
+        stopScanner();
       };
     }
   }, [isScannerOpen]);
+
+  const stopScanner = async () => {
+    if (html5QrCode.current && html5QrCode.current.isScanning) {
+      try {
+        await html5QrCode.current.stop();
+        html5QrCode.current.clear();
+      } catch (err) {
+        console.error("Erro ao parar scanner:", err);
+      } finally {
+        setIsScannerOpen(false);
+      }
+    } else {
+      setIsScannerOpen(false);
+    }
+  };
 
   // Image Selector State
   const [imageResults, setImageResults] = useState<{url: string, name: string; barcode: string}[]>([]);
@@ -199,7 +223,7 @@ export default function ProductForm() {
           <div className={styles.scannerContent}>
             <div className={styles.scannerHeader}>
               <h3>Escanear Código</h3>
-              <button className={styles.scannerClose} onClick={() => setIsScannerOpen(false)}>✕</button>
+              <button className={styles.scannerClose} onClick={stopScanner}>✕</button>
             </div>
             <div id="reader" className={styles.readerContainer}></div>
             <div className={styles.scannerInstructions}>

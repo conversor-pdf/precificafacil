@@ -140,23 +140,34 @@ export default function AdminDashboard() {
               {/* Corpo do Pedido (Apenas se em processamento e aberto) */}
               {isOpen && (
                 <div className="animate-slide-down">
-                  <div style={{ display: 'flex', padding: '0 24px', background: '#f8fafc', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
-                    <button onClick={(e) => { e.stopPropagation(); toggleTab(order.id, 'pendente'); }}
-                      style={{ padding: '15px 25px', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 700, color: currentTab === 'pendente' ? 'var(--primary)' : '#64748b', borderBottom: currentTab === 'pendente' ? '3px solid var(--primary)' : '3px solid transparent' }}>
-                      Pendentes ({pendingItems.length})
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); toggleTab(order.id, 'verificado'); }}
-                      style={{ padding: '15px 25px', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 700, color: currentTab === 'verificado' ? 'var(--primary)' : '#64748b', borderBottom: currentTab === 'verificado' ? '3px solid var(--primary)' : '3px solid transparent' }}>
-                      Verificados ({verifiedItems.length})
-                    </button>
+                  <div style={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap',
+                    padding: '10px 16px', 
+                    background: '#f8fafc', 
+                    borderTop: '1px solid var(--border)', 
+                    borderBottom: '1px solid var(--border)',
+                    gap: '10px',
+                    alignItems: 'center'
+                  }}>
+                    <div style={{ display: 'flex' }}>
+                      <button onClick={(e) => { e.stopPropagation(); toggleTab(order.id, 'pendente'); }}
+                        style={{ padding: '10px 15px', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', color: currentTab === 'pendente' ? 'var(--primary)' : '#64748b', borderBottom: currentTab === 'pendente' ? '3px solid var(--primary)' : '3px solid transparent' }}>
+                        Pendentes ({pendingItems.length})
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); toggleTab(order.id, 'verificado'); }}
+                        style={{ padding: '10px 15px', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', color: currentTab === 'verificado' ? 'var(--primary)' : '#64748b', borderBottom: currentTab === 'verificado' ? '3px solid var(--primary)' : '3px solid transparent' }}>
+                        Verificados ({verifiedItems.length})
+                      </button>
+                    </div>
                     
                     <button 
                       disabled={!isComplete}
                       onClick={(e) => { e.stopPropagation(); concludeOrder(order.id); alert('Resposta enviada para o colaborador!'); }}
                       style={{ 
-                        marginLeft: 'auto', alignSelf: 'center', padding: '10px 24px', borderRadius: '8px', border: 'none',
-                        background: isComplete ? 'var(--success)' : '#e2e8f0', color: 'white', fontWeight: 800, cursor: isComplete ? 'pointer' : 'not-allowed',
-                        transition: 'all 0.2s'
+                        marginLeft: 'auto', padding: '8px 16px', borderRadius: '8px', border: 'none',
+                        background: isComplete ? 'var(--success)' : '#e2e8f0', color: 'white', fontWeight: 800, fontSize: '0.8rem', cursor: isComplete ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.2s', whiteSpace: 'nowrap'
                       }}
                     >
                       Concluir e Enviar Resposta

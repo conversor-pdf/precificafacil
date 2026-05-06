@@ -42,6 +42,7 @@ export interface Order {
   lojista_id?: string;
   data_conclusao?: string;
   data_confirmacao?: string;
+  criado_por?: string;
 }
 
 export interface Stats {

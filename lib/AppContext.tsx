@@ -65,8 +65,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // Lojista sees orders assigned to them
       query = query.eq('lojista_id', user.id);
     } else if (user.role === 'employee') {
-      // Employee sees orders from their rede/lojista
-      query = query.eq('lojista_id', user.parent_id);
+      // O funcionário só vê os pedidos que ele mesmo enviou (baseado no nome gravado em 'mercado')
+      query = query.eq('lojista_id', user.parent_id).eq('mercado', user.nome);
     }
 
     const { data, error } = await query.order('data_criacao', { ascending: false });

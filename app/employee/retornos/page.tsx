@@ -49,7 +49,7 @@ export default function RetornosPage() {
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{order.nome}</h3>
                   <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    {order.produtos.length} produtos • Processado em {new Date(order.data_criacao).toLocaleDateString()}
+                    {order.produtos.length} produtos • Resposta em {order.data_conclusao ? new Date(order.data_conclusao).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Processando...'}
                   </div>
                 </div>
               </div>

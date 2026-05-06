@@ -12,6 +12,9 @@ const IconHome = () => (
 const IconSend = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
 );
+const IconHistory = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+);
 const IconFile = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
 );
@@ -68,6 +71,9 @@ export default function EmployeeLayout({
                 {notificationCount}
               </span>
             )}
+          </Link>
+          <Link href="/employee/historico" className={`${styles.navItem} ${pathname === '/employee/historico' ? styles.navItemActive : ''}`}>
+            <IconHistory /> Histórico
           </Link>
         </nav>
 

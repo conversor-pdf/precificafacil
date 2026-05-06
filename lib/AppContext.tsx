@@ -156,8 +156,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const concludeOrder = async (orderId: string) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'concluido' } : o));
-    await supabase.from('orders').update({ status: 'concluido' }).eq('id', orderId);
+    const now = new Date().toISOString();
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'concluido', data_conclusao: now } : o));
+    await supabase.from('orders').update({ status: 'concluido', data_conclusao: now }).eq('id', orderId);
   };
 
   const startProcessingOrder = async (orderId: string) => {
@@ -166,8 +167,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const confirmOrderResponse = async (orderId: string) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'confirmado' } : o));
-    await supabase.from('orders').update({ status: 'confirmado' }).eq('id', orderId);
+    const now = new Date().toISOString();
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'confirmado', data_confirmacao: now } : o));
+    await supabase.from('orders').update({ status: 'confirmado', data_confirmacao: now }).eq('id', orderId);
   };
 
   const logout = () => {

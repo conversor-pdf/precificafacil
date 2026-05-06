@@ -40,6 +40,8 @@ export interface Order {
   status: 'pendente' | 'processando' | 'concluido' | 'confirmado';
   produtos: ProductEnvio[];
   lojista_id?: string;
+  data_conclusao?: string;
+  data_confirmacao?: string;
 }
 
 export interface Stats {

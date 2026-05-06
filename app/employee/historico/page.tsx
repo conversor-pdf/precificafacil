@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import styles from '../page.module.css';
+import styles from '../../admin/page.module.css';
 import { useAppContext } from '@/lib/AppContext';
 import { Order } from '@/lib/types';
 
@@ -13,11 +13,11 @@ const IconClock = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
 );
 
-export default function AdminHistory() {
+export default function EmployeeHistory() {
   const { orders } = useAppContext();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  // Filter orders that are concluded or confirmed
+  // Filter orders that are already processed or confirmed
   const historyOrders = orders.filter(o => o.status === 'concluido' || o.status === 'confirmado');
 
   const formatDateTime = (isoString?: string) => {
@@ -35,19 +35,18 @@ export default function AdminHistory() {
   return (
     <div className="animate-fade-in">
       <div className={styles.sectionHeader}>
-        <h2>📜 Histórico de Respostas Enviadas</h2>
-        <p>Acompanhe todos os ajustes de preço concluídos pela administração.</p>
+        <h2>📜 Histórico de Pedidos</h2>
+        <p>Veja todos os seus pedidos que já foram revisados pela administração.</p>
       </div>
       
       <div className={styles.tableContainer}>
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Pedido / Distribuidora</th>
-              <th>Solicitante</th>
+              <th>Pedido / Empresa</th>
               <th style={{ textAlign: 'center' }}>Itens</th>
               <th style={{ textAlign: 'center' }}>Status</th>
-              <th style={{ textAlign: 'center' }}>Data/Hora Resposta</th>
+              <th style={{ textAlign: 'center' }}>Data da Resposta</th>
               <th style={{ textAlign: 'center' }}>Ações</th>
             </tr>
           </thead>
@@ -58,17 +57,14 @@ export default function AdminHistory() {
                   <div style={{ fontWeight: 700 }}>{order.nome}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: {order.id.split('-')[0]}</div>
                 </td>
-                <td>
-                  <span className={styles.marketBadge}>{order.mercado}</span>
-                </td>
                 <td style={{ textAlign: 'center' }}>{order.produtos.length}</td>
                 <td style={{ textAlign: 'center' }}>
                   <span style={{ 
                     fontSize: '0.7rem', fontWeight: 800, padding: '4px 8px', borderRadius: '4px',
-                    background: order.status === 'confirmado' ? '#f0fdf4' : '#f1f5f9',
-                    color: order.status === 'confirmado' ? '#16a34a' : '#64748b'
+                    background: order.status === 'confirmado' ? '#f0fdf4' : '#fffbeb',
+                    color: order.status === 'confirmado' ? '#16a34a' : '#d97706'
                   }}>
-                    {order.status === 'confirmado' ? 'ACEITO PELO LOJISTA' : 'AGUARDANDO LEITURA'}
+                    {order.status === 'confirmado' ? 'FINALIZADO' : 'AGUARDANDO SUA CONFIRMAÇÃO'}
                   </span>
                 </td>
                 <td style={{ textAlign: 'center', fontSize: '0.85rem' }}>
@@ -81,15 +77,15 @@ export default function AdminHistory() {
                     onClick={() => setSelectedOrder(order)}
                     style={{ color: 'var(--primary)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
                   >
-                    <IconEye /> Detalhes
+                    <IconEye /> Ver Detalhes
                   </button>
                 </td>
               </tr>
             ))}
             {historyOrders.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
-                  Nenhum histórico disponível no momento.
+                <td colSpan={5} style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                  Nenhum histórico disponível. Continue enviando seus pedidos!
                 </td>
               </tr>
             )}
@@ -103,9 +99,9 @@ export default function AdminHistory() {
           <div className={styles.modal} style={{ maxWidth: '900px', width: '95%' }}>
             <div className={styles.modalHeader}>
               <div>
-                <h2>Resumo do Pedido: {selectedOrder.nome}</h2>
+                <h2>Detalhes: {selectedOrder.nome}</h2>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>
-                  Enviado por {selectedOrder.mercado} em {formatDateTime(selectedOrder.data_conclusao)}
+                  Resposta enviada em {formatDateTime(selectedOrder.data_conclusao)}
                 </p>
               </div>
               <button className={styles.btnClose} onClick={() => setSelectedOrder(null)}>✕</button>
@@ -117,9 +113,9 @@ export default function AdminHistory() {
                     <tr>
                       <th>Produto</th>
                       <th style={{ textAlign: 'center' }}>Custo</th>
-                      <th style={{ textAlign: 'center' }}>Sugerido</th>
-                      <th style={{ textAlign: 'center' }}>Preço Final</th>
-                      <th style={{ textAlign: 'center' }}>Margem</th>
+                      <th style={{ textAlign: 'center' }}>Original</th>
+                      <th style={{ textAlign: 'center' }}>Final ADM</th>
+                      <th style={{ textAlign: 'center' }}>Resultado</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -127,7 +123,7 @@ export default function AdminHistory() {
                       <tr key={p.id}>
                         <td>
                           <div className={styles.productCell}>
-                            <img src={p.imagem} className={styles.productImg} />
+                            <img src={p.imagem} className={p.productImg} style={{ width: 40, height: 40 }} />
                             <div>
                               <div style={{ fontWeight: 600 }}>{p.nome}</div>
                               <div style={{ fontSize: '0.7rem' }}>{p.codigo_barras}</div>
@@ -136,10 +132,14 @@ export default function AdminHistory() {
                         </td>
                         <td style={{ textAlign: 'center' }}>R$ {p.custo.toFixed(2)}</td>
                         <td style={{ textAlign: 'center' }}>R$ {p.preco_sugerido.toFixed(2)}</td>
-                        <td style={{ textAlign: 'center', fontWeight: 800, color: p.status === 'alterado' ? 'var(--warning)' : 'var(--success)' }}>
+                        <td style={{ textAlign: 'center', fontWeight: 800, color: p.status === 'alterado' ? 'var(--error)' : 'var(--success)' }}>
                           R$ {p.preco_final?.toFixed(2)}
                         </td>
-                        <td style={{ textAlign: 'center' }}>{p.margem.toFixed(1)}%</td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: p.status === 'alterado' ? 'var(--error)' : 'var(--success)' }}>
+                            {p.status === 'alterado' ? 'ALTERADO' : 'MANTIDO'}
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

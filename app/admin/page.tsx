@@ -75,7 +75,7 @@ export default function AdminDashboard() {
       <div style={{ display: 'grid', gap: '15px' }}>
         {activeOrders.map(order => {
           const isProcessing = order.status === 'processando';
-          const isOpen = activeOrderId === order.id && isProcessing;
+          const isOpen = activeOrderId === order.id; // Permitir abrir se for o pedido ativo, mesmo que o status ainda não tenha atualizado no banco
           const currentTab = orderTabs[order.id] || 'pendente';
           const pendingItems = order.produtos.filter(p => p.status === 'pendente');
           const verifiedItems = order.produtos.filter(p => p.status === 'verificado' || p.status === 'alterado');
@@ -91,7 +91,7 @@ export default function AdminDashboard() {
               
               {/* Header do Pedido */}
               <div 
-                onClick={() => isProcessing && setActiveOrderId(isOpen ? null : order.id)}
+                onClick={() => (isProcessing || activeOrderId === order.id) && setActiveOrderId(isOpen ? null : order.id)}
                 style={{ 
                   padding: '24px', 
                   display: 'flex', 

@@ -112,6 +112,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateOrderProduct = async (orderId: string, productId: string, newPrice: number, newMargin: number, isChange: boolean) => {
+    // Optimistic update
+    setOrders(prev => prev.map(o => {
+      if (o.id !== orderId) return o;
+      return {
+        ...o,
+        produtos: o.produtos.map(p => 
+          p.id === productId 
+            ? { ...p, preco_final: newPrice, margem: newMargin, status: isChange ? 'alterado' : 'aprovado' } 
+            : p
+        )
+      };
+    }));
     await supabase.from('products').update({
       preco_final: newPrice,
       margem: newMargin,
@@ -120,8 +132,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const keepProductInOrder = async (orderId: string, productId: string) => {
-    const product = orders.find(o => o.id === orderId)?.produtos.find(p => p.id === productId);
+    const order = orders.find(o => o.id === orderId);
+    const product = order?.produtos.find(p => p.id === productId);
     if (!product) return;
+
+    // Optimistic update
+    setOrders(prev => prev.map(o => {
+      if (o.id !== orderId) return o;
+      return {
+        ...o,
+        produtos: o.produtos.map(p => 
+          p.id === productId 
+            ? { ...p, preco_final: product.preco_sugerido, status: 'verificado' } 
+            : p
+        )
+      };
+    }));
+
     await supabase.from('products').update({
       preco_final: product.preco_sugerido,
       status: 'verificado'
@@ -129,14 +156,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const concludeOrder = async (orderId: string) => {
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'concluido' } : o));
     await supabase.from('orders').update({ status: 'concluido' }).eq('id', orderId);
   };
 
   const startProcessingOrder = async (orderId: string) => {
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'processando' } : o));
     await supabase.from('orders').update({ status: 'processando' }).eq('id', orderId);
   };
 
   const confirmOrderResponse = async (orderId: string) => {
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'confirmado' } : o));
     await supabase.from('orders').update({ status: 'confirmado' }).eq('id', orderId);
   };
 

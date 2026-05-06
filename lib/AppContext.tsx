@@ -54,8 +54,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           console.log('Status da inscrição real-time:', status);
         });
 
+      // Polling de segurança (caso o real-time falhe ou oscile)
+      const pollingInterval = setInterval(() => {
+        fetchOrders();
+      }, 30000); // 30 segundos
+
       return () => {
         supabase.removeChannel(channel);
+        clearInterval(pollingInterval);
       };
     } else {
       localStorage.removeItem('precifica_user');

@@ -88,10 +88,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       .from('orders')
       .insert({
         nome,
-        mercado: user.mercado || 'Mercado Central',
+        mercado: user.nome || 'Mercado Central',
         status: 'pendente',
-        lojista_id: lojistaId,
-        solicitante: user.nome
+        lojista_id: lojistaId
       })
       .select()
       .single();

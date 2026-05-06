@@ -105,7 +105,7 @@ export default function AdminDashboard() {
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.3rem', color: isProcessing ? 'var(--secondary)' : '#64748b' }}>{order.nome}</h3>
                   <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{order.solicitante || order.mercado}</span> • {order.produtos.length} itens • {new Date(order.data_criacao).toLocaleDateString()}
+                    <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{order.mercado}</span> • {order.produtos.length} itens • {new Date(order.data_criacao).toLocaleDateString()}
                   </div>
                 </div>
                 

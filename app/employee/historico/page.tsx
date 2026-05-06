@@ -123,7 +123,7 @@ export default function EmployeeHistory() {
                       <tr key={p.id}>
                         <td>
                           <div className={styles.productCell}>
-                            <img src={p.imagem} className={p.productImg} style={{ width: 40, height: 40 }} />
+                            <img src={p.imagem} className={styles.productImg} style={{ width: 40, height: 40 }} />
                             <div>
                               <div style={{ fontWeight: 600 }}>{p.nome}</div>
                               <div style={{ fontSize: '0.7rem' }}>{p.codigo_barras}</div>
